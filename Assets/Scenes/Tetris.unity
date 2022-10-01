@@ -246,6 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 048d93e7915d9e645abf36fe79e8b737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  legacyClearLines: 1
   gridWidth: 10
   gridHeight: 20
   ghostMaterial: {fileID: 2100000, guid: a6b9f5313754ee24ca0ae0c234c3cb8e, type: 2}

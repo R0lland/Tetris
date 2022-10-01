@@ -305,13 +305,21 @@ public class Tetrimino : MonoBehaviour {
         }
         _locked = true;
         _canMove = false;
+        List<int> linesAddedToMatrix = new List<int>();
         for (int i = 0; i < transform.childCount; i++) {
             int line = Mathf.RoundToInt(transform.GetChild(i).transform.position.y);
             int column = Mathf.RoundToInt(transform.GetChild(i).transform.position.x);
             _gameManager.AddBlockToMatrix(line, column, transform.GetChild(i).gameObject);
+            if (!linesAddedToMatrix.Contains(line))
+            {
+                linesAddedToMatrix.Add(line);
+            }
         }
-
-        _gameManager.CheckLines();
+        
+        if (_gameManager.legacyClearLines)
+            _gameManager.CheckLines();
+        else
+            _gameManager.CheckLinesNew(linesAddedToMatrix);
         _gameManager.InstantiateTetriminio();
         Destroy(_ghostPiece.gameObject);
     }

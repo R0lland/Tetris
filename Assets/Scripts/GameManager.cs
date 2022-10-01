@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
     public static GameManager Instance;
 
+    public bool legacyClearLines = false;
     public int gridWidth;
     public int gridHeight;
     public Material ghostMaterial;
@@ -114,6 +115,17 @@ public class GameManager : MonoBehaviour {
             ClearLines(linesToClear);
         }
     }
+    
+    public void CheckLinesNew(List<int> linesAddedToMatrix) {
+        foreach (int line in linesAddedToMatrix)
+        {
+            if (_lineBlocks[line] >= gridWidth)
+            {
+                ClearLinesNew();
+                break;
+            }
+        }
+    }
 
     private void ClearLine(int lineToClear)
     {
@@ -143,6 +155,35 @@ public class GameManager : MonoBehaviour {
             }
             ScorePoints();
             iteractions++;
+        }
+        _scoreSound.Stop();
+        _scoreSound.Play();
+    }
+    
+    private void ClearLinesNew() {
+        int linesToDescend = 0;
+
+        for (int i = 0; i < gridHeight; i++)
+        {
+            if (_lineBlocks[i] >= gridWidth)
+            {
+                ClearLine(i);
+                linesToDescend++;
+                ScorePoints();
+            }
+            else if (linesToDescend > 0)
+            {
+                for (int j = 0; j < gridWidth; j++) {
+                    if (_matrix[i, j] != null) {
+                        _matrix[i, j].transform.position += new Vector3(0f, -linesToDescend, 0f);
+                        _matrix[i - linesToDescend, j] = _matrix[i, j];
+                        _matrix[i, j] = null;
+                    }
+                }
+                _lineBlocks[i - linesToDescend] = _lineBlocks[i];
+                _lineBlocks[i] = 0;
+            }
+            
         }
         _scoreSound.Stop();
         _scoreSound.Play();

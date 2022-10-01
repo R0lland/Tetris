@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Tetrimino : MonoBehaviour {
     public float diff;
-    public bool tetriminoI;
 
     private bool _canMove;
     private float _timerAutoMove;
@@ -14,10 +13,11 @@ public class Tetrimino : MonoBehaviour {
 
     //List of Vector2 to use as a base to the tetris rules
     private int _currentRotId;
-    private WallKickController _wallKickController;
     private bool _locked;
     private bool _waitingToLock;
     private float _lockDelayTime;
+    
+    protected WallKickController _wallKickController;
 
     // Update is called once per frame
     void Update() {
@@ -130,6 +130,10 @@ public class Tetrimino : MonoBehaviour {
         return false;
     }
 
+    protected virtual bool ControlWallKickFromTetrimino(bool clockwise, Vector3 originalPosition, int currentRot) {
+        return ControlWallKick(clockwise ? _wallKickController.wallKickGeneralClockwise : _wallKickController.wallKickGeneralCounterClockwise, originalPosition, currentRot);
+    }
+
     //Check where the tetriminio can rotate
     private bool CheckRotation(bool clockwise) {
         _waitingToLock = false;
@@ -141,11 +145,7 @@ public class Tetrimino : MonoBehaviour {
         transform.Rotate(new Vector3(0f, 0f, rot));
 
         //Check the Wallkick function
-        if (!tetriminoI) {
-            canRotate = ControlWallKick(clockwise ? _wallKickController.wallKickGeneralClockwise : _wallKickController.wallKickGeneralCounterClockwise, originalPos, _currentRotId);
-        } else {
-            canRotate = ControlWallKick(clockwise ? _wallKickController.wallKickIClockwise : _wallKickController.wallKickICounterClockwise, originalPos, _currentRotId);
-        }
+        canRotate = ControlWallKickFromTetrimino(clockwise, originalPos, _currentRotId);
 
         if (!canRotate) {
             transform.position = originalPos;
@@ -159,7 +159,7 @@ public class Tetrimino : MonoBehaviour {
 
     //Checking for WallKicks based on the rotation Rules
     //https://tetris.fandom.com/wiki/SRS
-    private bool ControlWallKick(WallKick[] wallKick, Vector3 originalPos, int rotId) {
+    protected bool ControlWallKick(WallKick[] wallKick, Vector3 originalPos, int rotId) {
         bool canRotate = false;
         for (int i = 0; i < wallKick[rotId].positionsToTest.Length; i++) {
             bool fit = true;

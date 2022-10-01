@@ -115,14 +115,20 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    private void ClearLine(int lineToClear)
+    {
+        for (int i = 0; i < gridWidth; i++) {
+            Destroy(_matrix[lineToClear, i]);
+            _matrix[lineToClear, i] = null;
+        }
+    }
+
     //Clear lines that are completed, and pull lines from above to the blank spaces
     private void ClearLines(List<int> linesToClear) {
         int iteractions = 0;
-        for (int i = 0; i < linesToClear.Count; i++) {
-            for (int j = 0; j < gridWidth; j++) {
-                Destroy(_matrix[linesToClear[i] - iteractions, j]);
-                _matrix[linesToClear[i] - iteractions, j] = null;
-            }
+        for (int i = 0; i < linesToClear.Count; i++)
+        {
+            ClearLine(linesToClear[i] - iteractions);
 
             for (int j = (linesToClear[i] + (1 - iteractions)); j < gridHeight; j++) {
                 for (int k = 0; k < gridWidth; k++) {

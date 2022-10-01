@@ -9,7 +9,7 @@ public class Tetrimino : MonoBehaviour {
     private float _timerAutoMove;
     private float _timerSideMove;
     private float _timerLock;
-    private Tetrimino _ghostPiece;
+    private Transform _ghostPiece;
 
     //List of Vector2 to use as a base to the tetris rules
     private int _currentRotId;
@@ -25,7 +25,7 @@ public class Tetrimino : MonoBehaviour {
         if (_canMove) {
             //Hard drop
             if (Input.GetKeyDown(KeyCode.Space)) {
-                transform.position = _ghostPiece.transform.position;
+                transform.position = _ghostPiece.position;
                 if (!CheckGameOver()) {
                     LockTetrimino();
                 }
@@ -245,10 +245,12 @@ public class Tetrimino : MonoBehaviour {
         }
 
         //Instantiate the same object as a ghost, but set the material as gray
-        _ghostPiece = Instantiate(this, transform.parent);
-        _ghostPiece.enabled = false;
-        for (int i = 0; i < _ghostPiece.transform.childCount; i++) {
-            _ghostPiece.transform.GetChild(i).GetComponent<MeshRenderer>().material = _gameManager.ghostMaterial;
+        
+        Tetrimino ghostPiece = Instantiate(this, transform.parent);
+        ghostPiece.enabled = false;
+        _ghostPiece = ghostPiece.transform;
+        for (int i = 0; i < _ghostPiece.childCount; i++) {
+            _ghostPiece.GetChild(i).GetComponent<MeshRenderer>().material = _gameManager.ghostMaterial;
         }
         SetGhostPiece();
         _canMove = true;
@@ -276,12 +278,12 @@ public class Tetrimino : MonoBehaviour {
     //Set the position of the ghost that will show where the block will fit. Start checking from the current tetrimino Position
     private void SetGhostPiece() {
         bool foundBoundary = false;
-        _ghostPiece.transform.position = transform.position;
-        _ghostPiece.transform.eulerAngles = transform.eulerAngles;
+        _ghostPiece.position = transform.position;
+        _ghostPiece.eulerAngles = transform.eulerAngles;
         for (int i = 0; i < _gameManager.gridHeight; i++) {
-            for (int j = 0; j < _ghostPiece.transform.childCount; j++) {
-                int destX = Mathf.RoundToInt(_ghostPiece.transform.GetChild(j).transform.position.x);
-                int destY = Mathf.RoundToInt(_ghostPiece.transform.GetChild(j).transform.position.y - 1);
+            for (int j = 0; j < _ghostPiece.childCount; j++) {
+                int destX = Mathf.RoundToInt(_ghostPiece.GetChild(j).transform.position.x);
+                int destY = Mathf.RoundToInt(_ghostPiece.GetChild(j).transform.position.y - 1);
 
                 if ((destY < 0 || _gameManager.Matrix[destY, destX] != null)) {
                     foundBoundary = true;
@@ -291,9 +293,9 @@ public class Tetrimino : MonoBehaviour {
             if (foundBoundary) {
                 break;
             }
-            _ghostPiece.transform.position = new Vector3(_ghostPiece.transform.position.x, _ghostPiece.transform.position.y - 1, _ghostPiece.transform.position.z);
+            _ghostPiece.position = new Vector3(_ghostPiece.position.x, _ghostPiece.position.y - 1, _ghostPiece.position.z);
         }
-        _ghostPiece.transform.position = new Vector3(_ghostPiece.transform.position.x, _ghostPiece.transform.position.y, _ghostPiece.transform.position.z + 1);
+        _ghostPiece.position = new Vector3(_ghostPiece.position.x, _ghostPiece.position.y, _ghostPiece.position.z + 1);
     }
 
     //After the tetrimino reaches the bottom of the matrix, or it has collided with another Tetrimino it will be added as a permanent component to the matrix

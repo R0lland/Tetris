@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour {
     //Intantiate Tetriminio
     public void InstantiateTetriminio() {
         Tetrimino tetrimino = Instantiate(_tetriminoPrefabs[Random.Range(0, _tetriminoPrefabs.Count)], _tetriminosParent);
-        tetrimino.InstantiateOnTop();
+        tetrimino.Init();
     }
 
     //Check if there are any lines completed. I'm using a List to check the amount of elements in each row, so that I don't have to verify all elements of each row all the time

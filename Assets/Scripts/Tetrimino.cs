@@ -16,6 +16,7 @@ public class Tetrimino : MonoBehaviour {
     private bool _locked;
     private bool _waitingToLock;
     private float _lockDelayTime;
+    private GameManager _gameManager;
     
     protected WallKickController _wallKickController;
 
@@ -103,14 +104,14 @@ public class Tetrimino : MonoBehaviour {
                 return false;
             }
 
-            if (moveY < 0 && (destY < 0 || GameManager.Instance.Matrix[destY, destX] != null)) {
+            if (moveY < 0 && (destY < 0 || _gameManager.Matrix[destY, destX] != null)) {
                 _waitingToLock = true;
                 _timerLock = 0f;
                 _timerAutoMove = 0f;
                 return false;
             }
 
-            if (destX < 0 || destX >= GameManager.Instance.gridWidth || GameManager.Instance.Matrix[destY, destX] != null) {
+            if (destX < 0 || destX >= _gameManager.gridWidth || _gameManager.Matrix[destY, destX] != null) {
                 return false;
             }
         }
@@ -121,9 +122,9 @@ public class Tetrimino : MonoBehaviour {
         for (int i = 0; i < transform.childCount; i++) {
             int destX = Mathf.RoundToInt(transform.GetChild(i).transform.position.x);
             int destY = Mathf.RoundToInt(transform.GetChild(i).transform.position.y - 1);
-            if (Mathf.RoundToInt(transform.GetChild(i).transform.position.y) > GameManager.Instance.gridHeight - 1 && GameManager.Instance.Matrix[destY, destX] != null) {
+            if (Mathf.RoundToInt(transform.GetChild(i).transform.position.y) > _gameManager.gridHeight - 1 && _gameManager.Matrix[destY, destX] != null) {
                 _canMove = false;
-                GameManager.Instance.GameOver();
+                _gameManager.GameOver();
                 return true;
             }
         }
@@ -168,8 +169,8 @@ public class Tetrimino : MonoBehaviour {
             for (int j = 0; j < transform.childCount; j++) {
                 int posX = Mathf.RoundToInt(transform.GetChild(j).transform.position.x);
                 int posY = Mathf.RoundToInt(transform.GetChild(j).transform.position.y);
-                if (posX < 0 || posX >= GameManager.Instance.gridWidth || posY < 0 || posY >= GameManager.Instance.gridHeight ||
-                    GameManager.Instance.Matrix[posY, posX] != null) {
+                if (posX < 0 || posX >= _gameManager.gridWidth || posY < 0 || posY >= _gameManager.gridHeight ||
+                    _gameManager.Matrix[posY, posX] != null) {
                     fit = false;
                     break;
                 }
@@ -197,19 +198,24 @@ public class Tetrimino : MonoBehaviour {
         return id;
     }
 
-
-    public void InstantiateOnTop() {
+    public void Init()
+    {
         _timerAutoMove = 0f;
         _currentRotId = 0;
         _wallKickController = WallKickController.Instance;
+        _gameManager = GameManager.Instance;
+        InstantiateOnTop();
+    }
+
+    private void InstantiateOnTop() {
         bool positionIsCorrect = false;
-        transform.position = new Vector3(GameManager.Instance.gridWidth / 2 + diff - 1, GameManager.Instance.gridHeight + diff, 0f);
+        transform.position = new Vector3(_gameManager.gridWidth / 2 + diff - 1, _gameManager.gridHeight + diff, 0f);
         //Always instantiate the tetrimino on the top of the matrix
         while (!positionIsCorrect) {
             transform.position += new Vector3(0f, -1f, 0f);
             positionIsCorrect = true;
             for (int i = 0; i < transform.childCount; i++) {
-                if (Mathf.RoundToInt(transform.GetChild(i).transform.position.y) >= GameManager.Instance.gridHeight) {
+                if (Mathf.RoundToInt(transform.GetChild(i).transform.position.y) >= _gameManager.gridHeight) {
                     positionIsCorrect = false;
                 }
             }
@@ -220,7 +226,7 @@ public class Tetrimino : MonoBehaviour {
         for (int j = 0; j < transform.childCount; j++) {
             int posX = Mathf.RoundToInt(transform.GetChild(j).transform.position.x);
             int posY = Mathf.RoundToInt(transform.GetChild(j).transform.position.y);
-            if (GameManager.Instance.Matrix[posY, posX] != null) {
+            if (_gameManager.Matrix[posY, posX] != null) {
                 needToKick = true;
                 break;
             }
@@ -233,7 +239,7 @@ public class Tetrimino : MonoBehaviour {
             //If doesn't fit in any location it's game over
             if (!fit) {
                 transform.position = originalPos;
-                GameManager.Instance.GameOver();
+                _gameManager.GameOver();
                 return;
             }
         }
@@ -242,7 +248,7 @@ public class Tetrimino : MonoBehaviour {
         _ghostPiece = Instantiate(this, transform.parent);
         _ghostPiece.enabled = false;
         for (int i = 0; i < _ghostPiece.transform.childCount; i++) {
-            _ghostPiece.transform.GetChild(i).GetComponent<MeshRenderer>().material = GameManager.Instance.ghostMaterial;
+            _ghostPiece.transform.GetChild(i).GetComponent<MeshRenderer>().material = _gameManager.ghostMaterial;
         }
         SetGhostPiece();
         _canMove = true;
@@ -272,12 +278,12 @@ public class Tetrimino : MonoBehaviour {
         bool foundBoundary = false;
         _ghostPiece.transform.position = transform.position;
         _ghostPiece.transform.eulerAngles = transform.eulerAngles;
-        for (int i = 0; i < GameManager.Instance.gridHeight; i++) {
+        for (int i = 0; i < _gameManager.gridHeight; i++) {
             for (int j = 0; j < _ghostPiece.transform.childCount; j++) {
                 int destX = Mathf.RoundToInt(_ghostPiece.transform.GetChild(j).transform.position.x);
                 int destY = Mathf.RoundToInt(_ghostPiece.transform.GetChild(j).transform.position.y - 1);
 
-                if ((destY < 0 || GameManager.Instance.Matrix[destY, destX] != null)) {
+                if ((destY < 0 || _gameManager.Matrix[destY, destX] != null)) {
                     foundBoundary = true;
                     break;
                 }
@@ -301,13 +307,13 @@ public class Tetrimino : MonoBehaviour {
         for (int i = 0; i < transform.childCount; i++) {
             int line = Mathf.RoundToInt(transform.GetChild(i).transform.position.y);
             int column = Mathf.RoundToInt(transform.GetChild(i).transform.position.x);
-            GameManager.Instance.AddBlockToMatrix(line, column, transform.GetChild(i).gameObject);
+            _gameManager.AddBlockToMatrix(line, column, transform.GetChild(i).gameObject);
 
             linesToCheck.Add(line);
         }
 
-        GameManager.Instance.CheckLines();
-        GameManager.Instance.InstantiateTetriminio();
+        _gameManager.CheckLines();
+        _gameManager.InstantiateTetriminio();
         Destroy(_ghostPiece.gameObject);
     }
 }
